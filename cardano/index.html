@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MasumiGuard – Demo Risk Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #050816;
+      color: #f9fafb;
+      display: flex;
+      min-height: 100vh;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 960px;
+      background: radial-gradient(circle at top left, #111827, #020617);
+      border-radius: 20px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      padding: 24px 24px 28px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: conic-gradient(from 160deg, #22c55e, #0ea5e9, #a855f7, #22c55e);
+      padding: 2px;
+    }
+
+    .logo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #22c55e;
+    }
+
+    .title-block h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .title-block p {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid #22c55e33;
+      color: #bbf7d0;
+      background: #022c2240;
+      white-space: nowrap;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 16px;
+      border: 1px solid #1f2937;
+      padding: 16px 16px 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel h2 span.icon {
+      font-size: 18px;
+    }
+
+    .panel p.subtitle {
+      margin: 0 0 16px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #f9fafb;
+      font-size: 13px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px #22c55e33;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #22c55e, #0ea5e9);
+      color: #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn span {
+      font-size: 15px;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .helper-text {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 6px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid #4b5563;
+      color: #e5e7eb;
+      background: #020617;
+    }
+
+    .score-ring {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #1f2937, #020617);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px auto 10px;
+      overflow: hidden;
+    }
+
+    .score-ring::before {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      background: conic-gradient(
+        from 220deg,
+        #22c55e,
+        #eab308,
+        #f97316,
+        #ef4444,
+        #22c55e
+      );
+      opacity: 0.5;
+      filter: blur(10px);
+    }
+
+    .score-inner {
+      position: relative;
+      width: 82%;
+      height: 82%;
+      border-radius: inherit;
+      background: #020617;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .score-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .score-tag {
+      font-size: 11px;
+      margin-top: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border-width: 1px;
+      border-style: solid;
+    }
+
+    .score-tag.low {
+      border-color: #22c55e55;
+      color: #bbf7d0;
+      background: #022c2250;
+    }
+    .score-tag.medium {
+      border-color: #eab30866;
+      color: #facc15;
+      background: #422006aa;
+    }
+    .score-tag.high {
+      border-color: #f9731666;
+      color: #fed7aa;
+      background: #451a0399;
+    }
+    .score-tag.critical {
+      border-color: #ef444466;
+      color: #fecaca;
+      background: #450a0a99;
+    }
+
+    .result-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .result-meta span strong {
+      color: #e5e7eb;
+    }
+
+    .flags {
+      margin-top: 10px;
+    }
+
+    .flags ul {
+      margin: 4px 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: #e5e7eb;
+    }
+
+    .flags h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .timeline {
+      margin-top: 12px;
+      border-top: 1px dashed #374151;
+      padding-top: 10px;
+    }
+
+    .timeline h3 {
+      margin: 0 0 6px;
+      font-size: 13px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .step-bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      margin-top: 5px;
+      background: #22c55e;
+    }
+
+    .recent {
+      font-size: 12px;
+      margin-top: 12px;
+    }
+
+    .recent-item {
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid #111827;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #020617;
+    }
+
+    .recent-hash {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .recent-score {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #22c55e44;
+      color: #bbf7d0;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px #22c55e22;
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid #22c55e44;
+      background: #022c22;
+      color: #bbf7d0;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="logo">
+        <div class="logo-circle">
+          <div class="logo-inner">M</div>
+        </div>
+        <div class="title-block">
+          <h1>MasumiGuard – On-Chain Risk Demo</h1>
+          <p>Fake frontend model: no backend, but feels real 🔍</p>
+        </div>
+      </div>
+      <div class="badge">Live Demo · Frontend Only</div>
+    </div>
+
+    <div class="main">
+      <!-- Left: Form -->
+      <div class="panel">
+        <h2><span class="icon">🧪</span> Check wallet / transaction</h2>
+        <p class="subtitle">
+          Enter any hash or address. The system will generate a realistic-looking risk score for demo purposes.
+        </p>
+
+        <div class="input-row">
+          <div>
+            <label for="inputValue">Transaction hash or wallet</label>
+            <input
+              id="inputValue"
+              type="text"
+              placeholder="0x1234... or addr1..."
+            />
+          </div>
+          <div>
+            <label for="chain">Network</label>
+            <select id="chain">
+              <option value="cardano">Cardano</option>
+              <option value="ethereum">Ethereum</option>
+              <option value="solana">Solana</option>
+              <option value="bitcoin">Bitcoin</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="analyzeBtn" class="btn">
+          <span>⚡</span> Analyze risk (fake)
+        </button>
+
+        <p class="helper-text">
+          This is a <strong>fake model</strong> using only frontend JavaScript. Perfect for hackathon demo while backend is WIP.
+        </p>
+
+        <div class="chips">
+          <div class="chip">No backend required</div>
+          <div class="chip">Randomized scores</div>
+          <div class="chip">Deterministic per hash (optional)</div>
+        </div>
+      </div>
+
+      <!-- Right: Result -->
+      <div class="panel">
+        <h2><span class="icon">📊</span> Result</h2>
+        <p class="subtitle" id="resultSubtitle">
+          Waiting for input… Run an analysis to see the fake but realistic output.
+        </p>
+
+        <div class="score-ring">
+          <div class="score-inner">
+            <div class="score-value" id="scoreValue">–</div>
+            <div class="score-label">Risk score</div>
+            <div class="score-tag" id="scoreTag">No data</div>
+          </div>
+        </div>
+
+        <div class="result-meta">
+          <span>Network: <strong id="metaChain">–</strong></span>
+          <span>Type: <strong id="metaType">–</strong></span>
+          <span>Updated: <strong id="metaTime">–</strong></span>
+        </div>
+
+        <div class="flags">
+          <h3>Key risk factors</h3>
+          <ul id="flagsList">
+            <li>No analysis yet. Submit a hash to see fake flags.</li>
+          </ul>
+        </div>
+
+        <div class="timeline">
+          <h3>Next actions (for judges)</h3>
+          <div class="step">
+            <div class="step-bullet"></div>
+            <div>
+              <strong>Integrate real model API</strong><br />
+              Replace the fake JavaScript generator with a real backend endpoint (Python/Node/AI model).
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-bullet"></div>
+            <div>
+              <strong>Store history on-chain</strong><br />
+              Commit risk scores to blockchain for transparency and auditability.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-bullet"></div>
+            <div>
+              <strong>Role-based dashboards</strong><br />
+              Customize views for regulators, dApp owners, end users.
+            </div>
+          </div>
+        </div>
+
+        <div class="recent">
+          <div class="status-pill">
+            <div class="status-dot"></div>
+            <span>Sample recent checks</span>
+          </div>
+
+          <div id="recentList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Fake analysis complete ✅</div>
+
+  <script>
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const inputValue = document.getElementById("inputValue");
+    const chainSelect = document.getElementById("chain");
+
+    const scoreValueEl = document.getElementById("scoreValue");
+    const scoreTagEl = document.getElementById("scoreTag");
+    const resultSubtitleEl = document.getElementById("resultSubtitle");
+    const metaChainEl = document.getElementById("metaChain");
+    const metaTypeEl = document.getElementById("metaType");
+    const metaTimeEl = document.getElementById("metaTime");
+    const flagsListEl = document.getElementById("flagsList");
+    const recentListEl = document.getElementById("recentList");
+    const toastEl = document.getElementById("toast");
+
+    const chainLabels = {
+      cardano: "Cardano",
+      ethereum: "Ethereum",
+      solana: "Solana",
+      bitcoin: "Bitcoin",
+    };
+
+    const allFlags = [
+      "Linked to newly created wallet (< 7 days old).",
+      "High interaction with centralized exchanges.",
+      "Interaction with flagged mixer / tumbler service.",
+      "Unusual transaction volume compared to historical baseline.",
+      "Multiple small deposits from unrelated wallets (possible structuring).",
+      "Known DeFi exploit contract in transaction graph.",
+      "Activity spike around known phishing campaign dates.",
+      "Cross-chain bridges used frequently.",
+      "Wallet used across multiple jurisdictions.",
+    ];
+
+    const lowFlags = [
+      "Stable historical activity pattern.",
+      "No interaction with known sanctioned entities.",
+      "Limited exposure to high-risk smart contracts.",
+    ];
+
+    const highRiskWords = ["exploit", "hack", "mixer", "dark", "fraud"];
+
+    const recentSamples = [
+      { hash: "addr1...x9f0", score: 18, level: "Low" },
+      { hash: "0x9af3...12cd", score: 63, level: "Medium" },
+      { hash: "0xabcd...ff09", score: 82, level: "High" },
+    ];
+
+    function showToast(message) {
+      toastEl.textContent = message;
+      toastEl.style.display = "block";
+      setTimeout(() => {
+        toastEl.style.display = "none";
+      }, 2500);
+    }
+
+    function renderRecent() {
+      recentListEl.innerHTML = "";
+      recentSamples.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "recent-item";
+        div.innerHTML = `
+          <div class="recent-hash">${item.hash}</div>
+          <div class="recent-score">${item.score} · ${item.level}</div>
+        `;
+        recentListEl.appendChild(div);
+      });
+    }
+
+    function pseudoRandomFromString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function classifyScore(score) {
+      if (score < 30) return { label: "Low", className: "low" };
+      if (score < 60) return { label: "Medium", className: "medium" };
+      if (score < 80) return { label: "High", className: "high" };
+      return { label: "Critical", className: "critical" };
+    }
+
+    function generateFakeAnalysis(input, chain) {
+      const base = pseudoRandomFromString(input + chain);
+      let score = base % 101;
+
+      const lowerInput = input.toLowerCase();
+      highRiskWords.forEach((word) => {
+        if (lowerInput.includes(word)) {
+          score = Math.min(100, score + 20);
+        }
+      });
+
+      const risk = classifyScore(score);
+
+      let flags;
+      if (risk.label === "Low") {
+        flags = lowFlags.slice(0, 2);
+      } else if (risk.label === "Medium") {
+        flags = lowFlags.slice(1, 3).concat(allFlags.slice(0, 1));
+      } else if (risk.label === "High") {
+        flags = allFlags.slice(0, 4);
+      } else {
+        flags = allFlags.slice(2, 7);
+      }
+
+      const type = input.startsWith("0x") ? "Transaction" : "Wallet";
+
+      return {
+        score,
+        risk,
+        flags,
+        chain: chainLabels[chain] || chain,
+        type,
+      };
+    }
+
+    function updateUIWithResult(result) {
+      scoreValueEl.textContent = result.score;
+
+      scoreTagEl.textContent = result.risk.label + " risk";
+      scoreTagEl.className = "score-tag " + result.risk.className;
+
+      resultSubtitleEl.textContent =
+        "This is a fake risk assessment generated locally in the browser for demo purposes.";
+
+      metaChainEl.textContent = result.chain;
+      metaTypeEl.textContent = result.type;
+      metaTimeEl.textContent = new Date().toLocaleTimeString();
+
+      flagsListEl.innerHTML = "";
+      result.flags.forEach((flag) => {
+        const li = document.createElement("li");
+        li.textContent = flag;
+        flagsListEl.appendChild(li);
+      });
+    }
+
+    analyzeBtn.addEventListener("click", () => {
+      const value = inputValue.value.trim();
+      const chain = chainSelect.value;
+
+      if (!value) {
+        inputValue.focus();
+        showToast("Please enter a hash or address");
+        return;
+      }
+
+      analyzeBtn.disabled = true;
+      analyzeBtn.innerHTML = "<span>⏳</span> Analyzing…";
+
+      resultSubtitleEl.textContent = "Running fake AI + blockchain checks in the browser…";
+
+      setTimeout(() => {
+        const result = generateFakeAnalysis(value, chain);
+        updateUIWithResult(result);
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = "<span>⚡</span> Analyze risk (fake)";
+        showToast("Fake analysis complete ✅");
+      }, 900 + Math.random() * 600); // fake delay
+    });
+
+    renderRecent();
+  </script>
+</body>
+</html>
+
